@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Units and Measuring-Alayne Morris</title>
+<style>
+:root{--blue:#2367a5;--blue-dark:#16446f;--blue-light:#e8f3ff;--sky:#cfe7ff;--ink:#183047;--paper:#ffffff;--line:#c9dced;--green:#e0f6e8;--red:#fff0f1}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f8fd;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{text-align:center;padding:28px 16px;background:linear-gradient(135deg,#d7ebff,#edf6ff);border-bottom:4px solid var(--blue)}
+header .eyebrow{margin:0 0 8px;text-transform:uppercase;letter-spacing:2px;font-size:.78rem;font-weight:bold;color:var(--blue-dark)}
+h1{margin:0 0 8px;font-size:clamp(1.6rem,4vw,2.35rem);color:var(--blue-dark)}
+header p{margin:0;color:#365d7e}
+main{max-width:850px;margin:22px auto;padding:0 14px}
+.tabs{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+button{border:1px solid #bfd5e9;border-radius:9px;padding:11px 15px;font-weight:bold;cursor:pointer;background:#e4f0fc;color:var(--blue-dark);font-size:.95rem}
+button:hover{filter:brightness(.97)}
+button:focus-visible,input:focus-visible{outline:3px solid #78b9f5;outline-offset:2px}
+button.active,.primary{background:var(--blue);border-color:var(--blue);color:white}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:clamp(16px,3vw,24px);box-shadow:0 5px 18px #174a7510}
+.hidden{display:none}
+.topline{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+h2{color:var(--blue-dark);margin:0;font-size:1.35rem}
+.timer{font-size:1.15rem;font-weight:bold;color:var(--blue-dark);background:var(--blue-light);border:1px solid #c4def7;padding:10px 13px;border-radius:9px;font-variant-numeric:tabular-nums}
+.instructions{background:#f2f8ff;border-left:4px solid var(--blue);padding:13px;border-radius:8px;line-height:1.55;margin:17px 0}
+.question{padding:16px 0;border-bottom:1px solid #e4edf5}
+.question:last-child{border-bottom:0}
+.question label{display:block;font-weight:bold;margin-bottom:10px}
+.ruler-wrap{overflow-x:auto;padding:10px 0 14px}
+svg.ruler{display:block;min-width:320px;max-width:100%;height:auto}
+input[type=number]{width:145px;max-width:100%;padding:10px;border:1px solid #b8cddd;border-radius:8px;font-size:1rem;background:#fff;color:var(--ink)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.feedback{margin-top:16px;padding:13px;border-radius:9px;line-height:1.6;border:1px solid var(--line)}
+.good{background:var(--green);border-color:#b6e2c5}.bad{background:var(--red);border-color:#f2c7cc}
+details{margin-top:8px}summary{cursor:pointer;font-weight:bold;color:var(--blue-dark)}
+footer{text-align:center;padding:22px 14px;color:#526b80;font-size:.9rem}
+@media(max-width:520px){.tabs button{flex:1 1 100%}.topline h2{width:100%}}
+</style>
+</head>
+<body>
+<header>
+<p class="eyebrow">Maths Practice • Timed Worksheets</p>
+<h1>Units and Measuring</h1>
+<p>Alayne Morris · Centimetres (cm) and millimetres (mm)</p>
+</header>
+<main>
+<div class="tabs" role="tablist" aria-label="Choose worksheet">
+<button class="active" id="tab1" role="tab" aria-selected="true" onclick="showSheet(1)">Worksheet 1: Read the ruler</button>
+<button id="tab2" role="tab" aria-selected="false" onclick="showSheet(2)">Worksheet 2: Convert cm ↔ mm</button>
+</div>
+<section class="panel" id="sheet1" role="tabpanel" aria-labelledby="tab1">
+<div class="topline"><h2>Worksheet 1: Read the ruler</h2><div class="timer" id="timer1">Time: 3:00</div></div>
+<p class="instructions">Look at each ruler and read where the arrow points. Enter your answer in <b>millimetres (mm)</b>. Each small line is 1 mm, and 10 mm = 1 cm.</p>
+<div id="rulerQuestions"></div>
+<div class="actions"><button class="primary" onclick="startTimer(1)">Start / Restart 3-minute timer</button><button onclick="checkAnswers(1)">Check answers</button><button onclick="resetSheet(1)">Try again</button></div>
+<div id="result1" aria-live="polite"></div>
+</section>
+<section class="panel hidden" id="sheet2" role="tabpanel" aria-labelledby="tab2">
+<div class="topline"><h2>Worksheet 2: Convert cm and mm</h2><div class="timer" id="timer2">Time: 3:00</div></div>
+<p class="instructions">Remember: <b>cm to mm: multiply by 10.</b> <b>mm to cm: divide by 10.</b> Type the number only; the unit is shown in the question.</p>
+<div id="conversionQuestions"></div>
+<div class="actions"><button class="primary" onclick="startTimer(2)">Start / Restart 3-minute timer</button><button onclick="checkAnswers(2)">Check answers</button><button onclick="resetSheet(2)">Try again</button></div>
+<div id="result2" aria-live="polite"></div>
+</section>
+</main>
+<footer>Take your time, check your units, and do your best!</footer>
+<script>
+const rulerValues=[13,27,35,48,62,76,84,95];
+const conversions=[
+ {q:"4 cm = ____ mm",a:40},{q:"8 cm = ____ mm",a:80},{q:"12 cm = ____ mm",a:120},
+ {q:"35 mm = ____ cm",a:3.5},{q:"70 mm = ____ cm",a:7},{q:"9 cm = ____ mm",a:90},
+ {q:"125 mm = ____ cm",a:12.5},{q:"6.5 cm = ____ mm",a:65},{q:"2 cm = ____ mm",a:20},{q:"48 mm = ____ cm",a:4.8}
+];
+function rulerSVG(value){
+ let marks='';
+ for(let i=0;i<=100;i++){
+   const x=20+i*4;
+   const h=(i%10===0)?42:(i%5===0?29:17);
+   marks+=`<line x1="${x}" y1="25" x2="${x}" y2="${25+h}" stroke="#29465e" stroke-width="${i%10===0?1.8:1}"/>`;
+   if(i%10===0) marks+=`<text x="${x}" y="17" text-anchor="middle" font-size="11" fill="#183047">${i/10}</text>`;
+ }
+ const ax=20+value*4;
+ return `<div class="ruler-wrap"><svg class="ruler" viewBox="0 0 450 90" role="img" aria-label="Ruler with arrow at ${value} millimetres"><rect x="20" y="23" width="400" height="44" rx="2" fill="#f7fbff" stroke="#9bbbd8"/>${marks}<path d="M ${ax} 73 L ${ax-6} 84 L ${ax+6} 84 Z" fill="#2367a5"/><line x1="${ax}" y1="67" x2="${ax}" y2="73" stroke="#2367a5" stroke-width="2"/></svg></div>`;
+}
+function makeRulers(){
+ document.getElementById('rulerQuestions').innerHTML=rulerValues.map((v,i)=>`<div class="question"><label>${i+1}. What measurement does the arrow show?</label>${rulerSVG(v)}<input type="number" min="0" step="1" id="r1q${i}" placeholder="Answer in mm" aria-label="Question ${i+1} answer in millimetres"></div>`).join('');
+}
+function makeConversions(){
+ document.getElementById('conversionQuestions').innerHTML=conversions.map((q,i)=>`<div class="question"><label for="r2q${i}">${i+1}. ${q.q}</label><input type="number" step="any" id="r2q${i}" placeholder="Your answer"></div>`).join('');
+}
+let intervals={1:null,2:null},remaining={1:180,2:180};
+function showSheet(n){
+ document.getElementById('sheet1').classList.toggle('hidden',n!==1);
+ document.getElementById('sheet2').classList.toggle('hidden',n!==2);
+ document.getElementById('tab1').classList.toggle('active',n===1);
+ document.getElementById('tab2').classList.toggle('active',n===2);
+ document.getElementById('tab1').setAttribute('aria-selected',String(n===1));
+ document.getElementById('tab2').setAttribute('aria-selected',String(n===2));
+}
+function displayTime(n){
+ const m=Math.floor(remaining[n]/60),s=remaining[n]%60;
+ document.getElementById('timer'+n).textContent=`Time: ${m}:${String(s).padStart(2,'0')}`;
+}
+function startTimer(n){
+ if(intervals[n])clearInterval(intervals[n]);
+ remaining[n]=180;displayTime(n);
+ document.getElementById('result'+n).innerHTML='';
+ intervals[n]=setInterval(()=>{
+  remaining[n]--;displayTime(n);
+  if(remaining[n]<=0){clearInterval(intervals[n]);intervals[n]=null;checkAnswers(n,true);}
+ },1000);
+}
+function checkAnswers(n,timeout=false){
+ if(intervals[n]){clearInterval(intervals[n]);intervals[n]=null;}
+ const answers=n===1?rulerValues:conversions.map(x=>x.a);
+ let score=0,details='';
+ answers.forEach((a,i)=>{
+  const el=document.getElementById(`r${n}q${i}`);
+  const raw=el.value.trim();
+  const correct=raw!=='' && Math.abs(Number(raw)-a)<0.00001;
+  if(correct)score++;
+  el.style.borderColor=correct?'#23834a':(raw===''?'#b8cddd':'#c13e61');
+  details+=`<div>${i+1}. ${correct?'✓ Correct':`Correct answer: <b>${a}</b>`}</div>`;
+ });
+ const result=document.getElementById('result'+n);
+ result.className='feedback '+(score===answers.length?'good':'bad');
+ result.innerHTML=`<b>${timeout?'Time is up! ':''}Your score: ${score}/${answers.length}</b><details><summary>Show answer key</summary>${details}</details>`;
+}
+function resetSheet(n){
+ if(intervals[n])clearInterval(intervals[n]);intervals[n]=null;remaining[n]=180;displayTime(n);
+ const count=n===1?rulerValues.length:conversions.length;
+ for(let i=0;i<count;i++){const el=document.getElementById(`r${n}q${i}`);el.value='';el.style.borderColor='#b8cddd';}
+ const result=document.getElementById('result'+n);result.innerHTML='';result.className='';
+}
+makeRulers();makeConversions();displayTime(1);displayTime(2);
+</script>
+</body>
+</html>
